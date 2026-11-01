@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "hT1TnBZZ9mzRrQxbQBvvm"
+uri = "file://.cache/wa-bot-studio-source.zip"
+type = "unspecified"
+title = "WA Bot Studio — Source ZIP"
+description = "Arsip source project dari commit Git aktif. Berisi source dan konfigurasi; tidak menyertakan node_modules atau .git."
+logical_id = "28f4b861-310d-4de9-89fb-e0c8a4677b9c"
+content_hash = "sha256:943c84312b2ae5730c42b9613059e85ecb0c31a8bf81f8663eaef8e07cf4a15b"
+size = 348986
+mtime_ms = 1792395951682
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:b0bc2040-d171-4476-a042-da4acd6f9cf8/28f4b861-310d-4de9-89fb-e0c8a4677b9c/34a11a5c-89f1-4d81-b215-474be3a2247b"
+storage_version_token = "1792395959632383"
+content_type = "application/octet-stream"

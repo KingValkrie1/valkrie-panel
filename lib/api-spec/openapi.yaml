@@ -1,0 +1,340 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: bot
+    description: WhatsApp bot management
+  - name: whatsapp
+    description: WhatsApp provider webhooks
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /bot/overview:
+    get:
+      operationId: getBotOverview
+      tags: [bot]
+      summary: Get bot overview
+      responses:
+        "200":
+          description: Overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotOverview"
+  /bot/whatsapp-status:
+    get:
+      operationId: getWhatsappStatus
+      tags: [bot]
+      summary: Get the QR login and WhatsApp connection status
+      responses:
+        "200":
+          description: WhatsApp connection status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhatsappStatus"
+  /bot/config:
+    get:
+      operationId: getBotConfig
+      tags: [bot]
+      summary: Get bot configuration
+      responses:
+        "200":
+          description: Bot configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotConfig"
+    patch:
+      operationId: updateBotConfig
+      tags: [bot]
+      summary: Update bot configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BotConfigUpdate"
+      responses:
+        "200":
+          description: Updated bot configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotConfig"
+  /bot/conversations:
+    get:
+      operationId: listBotConversations
+      tags: [bot]
+      summary: List bot conversations
+      responses:
+        "200":
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConversationSummary"
+  /bot/conversations/{id}:
+    get:
+      operationId: getBotConversation
+      tags: [bot]
+      summary: Get conversation messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Conversation detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetail"
+        "404":
+          description: Conversation not found
+  /bot/simulate:
+    post:
+      operationId: simulateBotMessage
+      tags: [bot]
+      summary: Send a test message to the bot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulateMessageInput"
+      responses:
+        "200":
+          description: Bot reply
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulateMessageResponse"
+  /whatsapp/webhook:
+    post:
+      operationId: receiveWhatsappMessage
+      tags: [whatsapp]
+      summary: Receive an incoming WhatsApp message
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/WhatsappMessageInput"
+      responses:
+        "200":
+          description: TwiML response
+          content:
+            application/xml:
+              schema:
+                type: string
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    BotOverview:
+      type: object
+      required:
+        - botStatus
+        - totalConversations
+        - messagesToday
+        - responseRate
+        - recentActivity
+      properties:
+        botStatus:
+          type: string
+          enum: [active, paused, not_connected]
+        totalConversations:
+          type: number
+        messagesToday:
+          type: number
+        responseRate:
+          type: number
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/Activity"
+    WhatsappStatus:
+      type: object
+      required: [status, qr, qrImage, connectedNumber]
+      properties:
+        status:
+          type: string
+          enum: [starting, qr, connected, disconnected, logged_out, error]
+        qr:
+          type: ["string", "null"]
+        qrImage:
+          type: ["string", "null"]
+        connectedNumber:
+          type: ["string", "null"]
+    Activity:
+      type: object
+      required: [id, type, text, createdAt]
+      properties:
+        id:
+          type: number
+        type:
+          type: string
+          enum: [message, connection, config]
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    BotConfig:
+      type: object
+      required:
+        - name
+        - description
+        - systemPrompt
+        - greeting
+        - fallbackMessage
+        - model
+        - isActive
+        - whatsappNumber
+        - updatedAt
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        systemPrompt:
+          type: string
+        greeting:
+          type: string
+        fallbackMessage:
+          type: string
+        model:
+          type: string
+          enum: [gpt-4.1-mini, gpt-4.1]
+        isActive:
+          type: boolean
+        whatsappNumber:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+          format: date-time
+    BotConfigUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        systemPrompt:
+          type: string
+          minLength: 1
+        greeting:
+          type: string
+        fallbackMessage:
+          type: string
+        model:
+          type: string
+          enum: [gpt-4.1-mini, gpt-4.1]
+        isActive:
+          type: boolean
+    ConversationSummary:
+      type: object
+      required: [id, contactName, phoneNumber, lastMessage, lastMessageAt, unreadCount, status]
+      properties:
+        id:
+          type: number
+        contactName:
+          type: string
+        phoneNumber:
+          type: string
+        lastMessage:
+          type: string
+        lastMessageAt:
+          type: string
+          format: date-time
+        unreadCount:
+          type: number
+        status:
+          type: string
+          enum: [open, resolved]
+    Message:
+      type: object
+      required: [id, role, content, createdAt]
+      properties:
+        id:
+          type: number
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ConversationDetail:
+      type: object
+      required: [id, contactName, phoneNumber, status, messages]
+      properties:
+        id:
+          type: number
+        contactName:
+          type: string
+        phoneNumber:
+          type: string
+        status:
+          type: string
+          enum: [open, resolved]
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+    SimulateMessageInput:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+        conversationId:
+          type: ["number", "null"]
+    SimulateMessageResponse:
+      type: object
+      required: [reply, conversationId, createdAt]
+      properties:
+        reply:
+          type: string
+        conversationId:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+    WhatsappMessageInput:
+      type: object
+      additionalProperties:
+        type: string
+

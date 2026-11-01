@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: valkrie-panel
+    env: node
+    rootDir: .
+    region: singapore
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @workspace/wa-bot-studio run build && pnpm --filter @workspace/api-server run build
+    startCommand: node artifacts/api-server/dist/index.mjs
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      # Groq retired llama-3.1-8b-instant for developer/free tiers in August 2026.
+      - key: AI_MODEL
+        value: openai/gpt-oss-20b
+      - key: WHATSAPP_BOT_ENABLED
+        value: "true"
+      # Required for bot and workspace API data; supply a managed PostgreSQL URL.
+      - key: DATABASE_URL
+        sync: false
+      # Required to prevent unauthenticated access to workspace APIs.
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_CLERK_PUBLISHABLE_KEY
+        sync: false

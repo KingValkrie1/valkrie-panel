@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "WA Bot Studio"
+description = "A web dashboard for configuring an AI WhatsApp assistant, reviewing conversations, and connecting the bot to a WhatsApp messaging provider."
+version = "1.0.0"
+id = "artifacts/wa-bot-studio"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18131
+
+[services.development]
+run = "pnpm --filter @workspace/wa-bot-studio run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wa-bot-studio", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/wa-bot-studio/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18131"
+BASE_PATH = "/"

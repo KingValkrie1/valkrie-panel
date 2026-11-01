@@ -1,0 +1,1 @@
+- [Baileys runtime packaging](baileys-workspace.md) — externalized Baileys dependencies must be direct API-service dependencies and verified at runtime.
